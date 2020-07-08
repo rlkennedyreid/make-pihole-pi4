@@ -1,0 +1,37 @@
+version: "3.8"
+
+# More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
+# ${} syntax is used to provide private variables, see link below on usage
+# https://vsupalov.com/docker-arg-env-variable-guide/#the-dot-env-file-env
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+    # These are common ports; check other containers for conflicts
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+    environment:
+      TZ: 'Europe/London'
+    # If the password is not set, a random default is created. Check logs for it
+      WEBPASSWORD: ${password}
+    # These are the upstream DNS servers; the servers that resolve addresses NOT in blocklist
+      DNS1: 1.1.1.1
+      DNS2: 1.0.0.1
+    # This is the IP of the device running pihole
+      ServerIP: ${server_ip}
+    # Volumes store your data between container upgrades
+    volumes:
+       - '${mount_point}/pihole/:/etc/pihole/'
+       - '${mount_point}/dnsmasq.d/:/etc/dnsmasq.d/'
+    dns:
+    # Not upstream DNS servers; we want to ensure pihole is the DNS server to our LAN
+      - 127.0.0.1
+    # Recommended but not required (DHCP needs NET_ADMIN)
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
