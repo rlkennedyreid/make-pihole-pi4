@@ -7,13 +7,7 @@ services:
   pihole:
     container_name: pihole
     image: pihole/pihole:latest
-    ports:
-    # These are common ports; check other containers for conflicts
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "67:67/udp"
-      - "80:80/tcp"
-      - "443:443/tcp"
+    network_mode: host
     environment:
       TZ: 'Europe/London'
     # If the password is not set, a random default is created. Check logs for it
@@ -30,8 +24,8 @@ services:
     dns:
     # Not upstream DNS servers; we want to ensure pihole is the DNS server to our LAN
       - 127.0.0.1
+      - ${server_ip}
     # Recommended but not required (DHCP needs NET_ADMIN)
-    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     cap_add:
       - NET_ADMIN
     restart: unless-stopped
